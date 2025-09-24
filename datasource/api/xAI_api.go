@@ -15,15 +15,30 @@ func CreateXaiApi(config config.Config) *XaiApi {
 	}
 }
 
-type CreateChatRequest struct {
+type ChatRequest struct {
 	Input  string `json:"input"`
 	Model  string `json:"model"`
 	Stream bool   `json:"stream"`
 }
 
+func (api *XaiApi) CreateChatRequest(input string) *ChatRequest {
+	return &ChatRequest{
+		Input:  input,
+		Model:  api.DefaultModel,
+		Stream: api.DefaultStream,
+	}
+}
+
 type ContinueChatRequest struct {
-	CreateChatRequest
+	ChatRequest
 	PreviousResponseId string `json:"previous_response_id"`
+}
+
+func (api *XaiApi) CreateContinueChatRequest(input string, responseId string) *ContinueChatRequest {
+	return &ContinueChatRequest{
+		ChatRequest:        *api.CreateChatRequest(input),
+		PreviousResponseId: responseId,
+	}
 }
 
 /*
@@ -55,7 +70,7 @@ type Content struct {
 }
 
 // https://docs.x.ai/docs/api-reference#create-new-response
-func (config XaiApi) CreateChat(request CreateChatRequest) (*ChatResponse, error) {
+func (config XaiApi) CreateChat(request *ChatRequest) (*ChatResponse, error) {
 	client := resty.New()
 	defer client.Close()
 
@@ -70,7 +85,7 @@ func (config XaiApi) CreateChat(request CreateChatRequest) (*ChatResponse, error
 	return &response, err
 }
 
-func (config XaiApi) ContinueChat(request ContinueChatRequest) (*ChatResponse, error) {
+func (config XaiApi) ContinueChat(request *ContinueChatRequest) (*ChatResponse, error) {
 	client := resty.New()
 	defer client.Close()
 	client.SetHeader("Authorization", "Bearer "+config.API_KEY)

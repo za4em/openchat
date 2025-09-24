@@ -21,69 +21,96 @@ func (store *ChatStore) GetChat(ID string) *domain.Chat {
 	return store.Storage.Chats[ID]
 }
 
-// todo only create chat if there is no other empty chats
 func (store *ChatStore) CreateChat(input string) (*domain.Chat, error) {
-	message := domain.NewMessage(input)
-	chat := domain.NewChat(message)
-	error := store.Storage.Save(chat)
-	if error != nil {
-		return nil, domain.ErrorStorageFailure(error)
+	message, chat := store.createMessageAndChat(input)
+	err := store.saveChat(chat)
+	if err != nil {
+		return nil, err
 	}
 
-	request := api.CreateChatRequest{
-		Input:  input,
-		Model:  store.Api.DefaultModel,
-		Stream: store.Api.DefaultStream,
-	}
-	response, error := store.Api.CreateChat(request)
-	if error != nil {
-		log.Println(error)
-		return nil, domain.ErrorUnexpectedAPIResponse(error)
+	request := store.Api.CreateChatRequest(input)
+	response, err := store.Api.CreateChat(request)
+	if err != nil {
+		return nil, handleApiError(err)
 	}
 
-	message.Response = &domain.Response{
-		ID:   response.ID,
-		Text: getContentFromResponse(response),
-	}
-
-	error = store.Storage.Save(chat)
-	return chat, error
+	message.Response = convertApiResponse(response)
+	err = store.saveChat(chat)
+	return chat, err
 }
 
 func (store *ChatStore) SendMessage(input string, chat *domain.Chat) error {
+	lastResponse, err := getLastResponse(chat)
+	if err != nil {
+		return err
+	}
+
+	message := addNewMessageToChat(input, chat)
+	err = store.saveChat(chat)
+	if err != nil {
+		return err
+	}
+
+	request := store.Api.CreateContinueChatRequest(input, lastResponse.ID)
+	response, err := store.Api.ContinueChat(request)
+	if err != nil {
+		return handleApiError(err)
+	}
+
+	message.Response = convertApiResponse(response)
+	err = store.saveChat(chat)
+	return err
+}
+
+func (store *ChatStore) createMessageAndChat(input string) (*domain.Message, *domain.Chat) {
+	var chat *domain.Chat
+	for _, c := range store.GetChats() {
+		if len(c.Messages) == 0 {
+			chat = c
+			break
+		}
+	}
+	message := domain.NewMessage(input)
+	if chat == nil {
+		chat = domain.NewChat(message)
+	} else {
+		chat.Messages = append(chat.Messages, message)
+	}
+	return message, chat
+}
+
+func getLastResponse(chat *domain.Chat) (*domain.Response, error) {
 	lastResponse := chat.Messages[len(chat.Messages)-1].Response
 	if lastResponse == nil {
-		return domain.ErrorUnableToSendMessage("Wait for the response or delete previous message")
+		return nil, domain.ErrUnableToSendMessage("Wait for the response or delete previous message")
 	}
+	return lastResponse, nil
+}
 
+func addNewMessageToChat(input string, chat *domain.Chat) *domain.Message {
 	message := domain.NewMessage(input)
 	chat.Messages = append(chat.Messages, message)
-	error := store.Storage.Save(chat)
-	if error != nil {
-		return domain.ErrorStorageFailure(error)
-	}
+	return message
+}
 
-	request := api.ContinueChatRequest{
-		CreateChatRequest: api.CreateChatRequest{
-			Input:  input,
-			Model:  store.Api.DefaultModel,
-			Stream: store.Api.DefaultStream,
-		},
-		PreviousResponseId: lastResponse.ID,
+func (store *ChatStore) saveChat(chat *domain.Chat) error {
+	err := store.Storage.Save(chat)
+	if err != nil {
+		return domain.ErrStorageFailure(err)
 	}
-	response, error := store.Api.ContinueChat(request)
-	if error != nil {
-		log.Println(error)
-		return domain.ErrorUnexpectedAPIResponse(error)
-	}
+	return nil
+}
 
-	message.Response = &domain.Response{
+func handleApiError(err error) error {
+	log.Println(err)
+	return domain.ErrUnexpectedAPIResponse(err)
+}
+
+func convertApiResponse(response *api.ChatResponse) *domain.Response {
+	return &domain.Response{
 		ID:   response.ID,
 		Text: getContentFromResponse(response),
 	}
-
-	error = store.Storage.Save(chat)
-	return error
 }
 
 func getContentFromResponse(response *api.ChatResponse) string {

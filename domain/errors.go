@@ -2,18 +2,18 @@ package domain
 
 import "errors"
 
-func errorDataSourse(cause error, text string) error {
+func errDataSourse(cause error, text string) error {
 	return errors.New(text + "\nCause: " + cause.Error())
 }
 
-func ErrorUnexpectedAPIResponse(cause error) error {
-	return errorDataSourse(cause, "Unexpected external API response")
+func ErrUnexpectedAPIResponse(cause error) error {
+	return errDataSourse(cause, "Unexpected external API response")
 }
 
-func ErrorStorageFailure(cause error) error {
-	return errorDataSourse(cause, "Unexpected storage error")
+func ErrStorageFailure(cause error) error {
+	return errDataSourse(cause, "Unexpected storage error")
 }
 
-func ErrorUnableToSendMessage(reason string) error {
+func ErrUnableToSendMessage(reason string) error {
 	return errors.New("Unable to send a message: " + reason)
 }
