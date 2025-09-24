@@ -6,7 +6,8 @@ var (
 )
 
 type Config struct {
-	API_URL      string
-	API_KEY      string
-	DefaultModel string
+	API_URL       string
+	API_KEY       string
+	DefaultModel  string
+	DefaultStream bool
 }

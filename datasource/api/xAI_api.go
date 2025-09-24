@@ -5,19 +5,25 @@ import (
 	"resty.dev/v3"
 )
 
-type APIConfig struct {
+type XaiApi struct {
 	config.Config
 }
 
-type CreateChat struct {
+func CreateXaiApi(config config.Config) *XaiApi {
+	return &XaiApi{
+		Config: config,
+	}
+}
+
+type CreateChatRequest struct {
 	Input  string `json:"input"`
 	Model  string `json:"model"`
 	Stream bool   `json:"stream"`
 }
 
-type ContinueChat struct {
-	CreateChat
-	PreviousResponseId int `json:"previous_response_id"`
+type ContinueChatRequest struct {
+	CreateChatRequest
+	PreviousResponseId string `json:"previous_response_id"`
 }
 
 /*
@@ -49,7 +55,7 @@ type Content struct {
 }
 
 // https://docs.x.ai/docs/api-reference#create-new-response
-func (config APIConfig) CreateChat(request CreateChat) (*ChatResponse, error) {
+func (config XaiApi) CreateChat(request CreateChatRequest) (*ChatResponse, error) {
 	client := resty.New()
 	defer client.Close()
 
@@ -64,7 +70,7 @@ func (config APIConfig) CreateChat(request CreateChat) (*ChatResponse, error) {
 	return &response, err
 }
 
-func (config APIConfig) ContinueChat(responseID string, request ContinueChat) (*ChatResponse, error) {
+func (config XaiApi) ContinueChat(request ContinueChatRequest) (*ChatResponse, error) {
 	client := resty.New()
 	defer client.Close()
 	client.SetHeader("Authorization", "Bearer "+config.API_KEY)
@@ -72,7 +78,6 @@ func (config APIConfig) ContinueChat(responseID string, request ContinueChat) (*
 
 	var response ChatResponse
 	_, err := client.R().
-		SetPathParam("id", responseID).
 		SetHeader("Authorization", "Bearer "+config.API_KEY).
 		SetHeader("Content-Type", "application/json").
 		SetBody(request).
