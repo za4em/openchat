@@ -20,22 +20,11 @@ type ContinueChat struct {
 	PreviousResponseId int `json:"previous_response_id"`
 }
 
-type ChatResponse struct {
-	CreatedAt          int      `json:"created_at"`
-	ID                 string   `json:"id"`
-	Output             []Output `json:"output"`
-	PreviousResponseID any      `json:"previous_response_id"`
-	Status             string   `json:"status"`
-}
-type Content struct {
-	Type string `json:"type"`
-	Text string `json:"text"`
-}
-
 /*
  * type can be:
  * "message" - final answer, has content
  * "reasoning" - reasoning process, has summary
+ * "function_call" - a tool call
  */
 type Output struct {
 	Content []Content `json:"content,omitempty"`
@@ -44,6 +33,19 @@ type Output struct {
 	Type    string    `json:"type"`
 	Status  string    `json:"status"`
 	Summary []Content `json:"summary,omitempty"`
+}
+
+type ChatResponse struct {
+	CreatedAt          int      `json:"created_at"`
+	ID                 string   `json:"id"`
+	Output             []Output `json:"output"`
+	PreviousResponseID any      `json:"previous_response_id"`
+	Status             string   `json:"status"`
+}
+
+type Content struct {
+	Type string `json:"type"`
+	Text string `json:"text"`
 }
 
 // https://docs.x.ai/docs/api-reference#create-new-response
@@ -59,11 +61,7 @@ func (config APIConfig) CreateChat(request CreateChat) (*ChatResponse, error) {
 		SetResult(&response).
 		Post(config.API_URL + "/responses")
 
-	if err != nil {
-		return nil, err
-	}
-
-	return &response, nil
+	return &response, err
 }
 
 func (config APIConfig) ContinueChat(responseID string, request ContinueChat) (*ChatResponse, error) {
@@ -81,9 +79,5 @@ func (config APIConfig) ContinueChat(responseID string, request ContinueChat) (*
 		SetResult(&response).
 		Post(config.API_URL + "/responses/{id}")
 
-	if err != nil {
-		return nil, err
-	}
-
-	return &response, nil
+	return &response, err
 }
