@@ -9,7 +9,7 @@ type XaiApi struct {
 	config.Config
 }
 
-func CreateXaiApi(config config.Config) *XaiApi {
+func NewXaiApi(config config.Config) *XaiApi {
 	return &XaiApi{
 		Config: config,
 	}
@@ -21,7 +21,7 @@ type ChatRequest struct {
 	Stream bool   `json:"stream"`
 }
 
-func (api *XaiApi) CreateChatRequest(input string) *ChatRequest {
+func (api *XaiApi) NewChatRequest(input string) *ChatRequest {
 	return &ChatRequest{
 		Input:  input,
 		Model:  api.DefaultModel,
@@ -34,9 +34,9 @@ type ContinueChatRequest struct {
 	PreviousResponseId string `json:"previous_response_id"`
 }
 
-func (api *XaiApi) CreateContinueChatRequest(input string, responseId string) *ContinueChatRequest {
+func (api *XaiApi) NewContinueChatRequest(input string, responseId string) *ContinueChatRequest {
 	return &ContinueChatRequest{
-		ChatRequest:        *api.CreateChatRequest(input),
+		ChatRequest:        *api.NewChatRequest(input),
 		PreviousResponseId: responseId,
 	}
 }

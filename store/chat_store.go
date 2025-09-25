@@ -28,7 +28,7 @@ func (store *ChatStore) CreateChat(input string) (*domain.Chat, error) {
 		return nil, err
 	}
 
-	request := store.Api.CreateChatRequest(input)
+	request := store.Api.NewChatRequest(input)
 	response, err := store.Api.CreateChat(request)
 	if err != nil {
 		return nil, handleApiError(err)
@@ -51,7 +51,7 @@ func (store *ChatStore) SendMessage(input string, chat *domain.Chat) error {
 		return err
 	}
 
-	request := store.Api.CreateContinueChatRequest(input, lastResponse.ID)
+	request := store.Api.NewContinueChatRequest(input, lastResponse.ID)
 	response, err := store.Api.ContinueChat(request)
 	if err != nil {
 		return handleApiError(err)

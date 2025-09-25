@@ -3,11 +3,12 @@ package main
 import (
 	"log"
 
+	tea "github.com/charmbracelet/bubbletea"
 	"github.com/za4em/openchat/config"
 	"github.com/za4em/openchat/datasource/api"
 	"github.com/za4em/openchat/datasource/storage"
-	"github.com/za4em/openchat/presentation"
 	"github.com/za4em/openchat/store"
+	"github.com/za4em/openchat/ui"
 )
 
 func main() {
@@ -17,18 +18,19 @@ func main() {
 		DefaultModel:  config.DEFAULT_MODEL,
 		DefaultStream: false,
 	}
-	api := api.CreateXaiApi(config)
-	storage, error := storage.CreateChatStorage()
+	api := api.NewXaiApi(config)
+	storage, error := storage.NewChatStorage()
 	if error != nil {
 		log.Fatal(error)
 		return
 	}
-	store := store.ChatStore{
+	store := &store.ChatStore{
 		Api:     api,
 		Storage: storage,
 	}
-	uiModel := presentation.UiModel{
-		ChatStore: &store,
+	uiModel := ui.NewModel(store)
+	p := tea.NewProgram(uiModel)
+	if _, err := p.Run(); err != nil {
+		log.Fatal(err)
 	}
-	_ = uiModel
 }

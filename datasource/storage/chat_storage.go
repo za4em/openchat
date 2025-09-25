@@ -21,7 +21,7 @@ type ChatStorage struct {
 	Chats     map[string]*domain.Chat
 }
 
-func CreateChatStorage() (*ChatStorage, error) {
+func NewChatStorage() (*ChatStorage, error) {
 	configDir, err := createConfigDir()
 	if err != nil {
 		return nil, err
