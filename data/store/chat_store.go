@@ -13,8 +13,12 @@ type ChatStore struct {
 	Storage *storage.ChatStorage
 }
 
-func (store *ChatStore) GetChats() map[string]*domain.Chat {
-	return store.Storage.Chats
+func (store *ChatStore) GetChats() []*domain.Chat {
+	var chats []*domain.Chat
+	for _, chat := range store.Storage.Chats {
+		chats = append(chats, chat)
+	}
+	return chats
 }
 
 func (store *ChatStore) GetChat(ID string) *domain.Chat {

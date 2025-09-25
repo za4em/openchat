@@ -37,7 +37,7 @@ func NewChat(message *Message) *Chat {
 }
 
 type ChatStore interface {
-	GetChats() map[string]*Chat
+	GetChats() []*Chat
 	GetChat(ID string) *Chat
 	CreateChat(input string) (*Chat, error)
 	SendMessage(input string, chat *Chat) error

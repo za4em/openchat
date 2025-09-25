@@ -14,12 +14,17 @@ type ChatModel struct {
 	ChatStore       domain.ChatStore
 	view            uint
 	responseLoading bool
+	chats           []*domain.Chat
+	currentChat     *domain.Chat
 }
 
 func NewModel(chatStore domain.ChatStore) ChatModel {
+	chats := chatStore.GetChats()
 	return ChatModel{
 		ChatStore:       chatStore,
 		view:            mainView,
+		chats:           chats,
+		currentChat:     chats[len(chats)-1],
 		responseLoading: false,
 	}
 }
