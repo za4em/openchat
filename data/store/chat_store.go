@@ -3,8 +3,8 @@ package store
 import (
 	"log"
 
-	"github.com/za4em/openchat/datasource/api"
-	"github.com/za4em/openchat/datasource/storage"
+	"github.com/za4em/openchat/data/datasource/api"
+	"github.com/za4em/openchat/data/datasource/storage"
 	"github.com/za4em/openchat/domain"
 )
 

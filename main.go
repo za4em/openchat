@@ -5,9 +5,9 @@ import (
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/za4em/openchat/config"
-	"github.com/za4em/openchat/datasource/api"
-	"github.com/za4em/openchat/datasource/storage"
-	"github.com/za4em/openchat/store"
+	"github.com/za4em/openchat/data/datasource/api"
+	"github.com/za4em/openchat/data/datasource/storage"
+	"github.com/za4em/openchat/data/store"
 	"github.com/za4em/openchat/ui"
 )
 
