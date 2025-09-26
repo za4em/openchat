@@ -43,7 +43,7 @@ func (model ChatModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				}
 
 			case "enter":
-				model.currentChat = model.chats[model.listIndex]
+				model.currentChat = &model.chats[model.listIndex]
 				model.textInput.SetValue("")
 				model.textInput.Focus()
 				model.focus = chatFocus

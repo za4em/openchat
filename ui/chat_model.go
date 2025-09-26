@@ -21,7 +21,7 @@ type ChatModel struct {
 	view            uint
 	focus           uint
 	responseLoading bool
-	chats           []*domain.Chat
+	chats           []domain.Chat
 	listIndex       int
 	currentChat     *domain.Chat
 	textInput       textinput.Model
@@ -34,7 +34,7 @@ func NewModel(chatStore domain.ChatStore) ChatModel {
 	if len(chats) == 0 {
 		currentChat = nil
 	} else {
-		currentChat = chats[len(chats)-1]
+		currentChat = &chats[len(chats)-1]
 	}
 	return ChatModel{
 		ChatStore:       chatStore,

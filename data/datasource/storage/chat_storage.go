@@ -18,7 +18,7 @@ const (
 
 type ChatStorage struct {
 	configDir string
-	Chats     map[string]*domain.Chat
+	Chats     map[string]domain.Chat
 }
 
 func NewChatStorage() (*ChatStorage, error) {
@@ -29,7 +29,7 @@ func NewChatStorage() (*ChatStorage, error) {
 
 	storage := &ChatStorage{
 		configDir: configDir,
-		Chats:     make(map[string]*domain.Chat),
+		Chats:     make(map[string]domain.Chat),
 	}
 
 	files, err := os.ReadDir(configDir)
@@ -43,7 +43,7 @@ func NewChatStorage() (*ChatStorage, error) {
 			if err != nil {
 				continue
 			}
-			storage.Chats[chat.ID] = chat
+			storage.Chats[chat.ID] = *chat
 		}
 	}
 

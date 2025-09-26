@@ -13,16 +13,12 @@ type ChatStore struct {
 	Storage *storage.ChatStorage
 }
 
-func (store *ChatStore) GetChats() []*domain.Chat {
-	var chats []*domain.Chat
+func (store *ChatStore) GetChats() []domain.Chat {
+	var chats []domain.Chat
 	for _, chat := range store.Storage.Chats {
 		chats = append(chats, chat)
 	}
 	return chats
-}
-
-func (store *ChatStore) GetChat(ID string) *domain.Chat {
-	return store.Storage.Chats[ID]
 }
 
 func (store *ChatStore) CreateChat(input string) (*domain.Chat, error) {
@@ -68,9 +64,9 @@ func (store *ChatStore) SendMessage(input string, chat *domain.Chat) error {
 
 func (store *ChatStore) createMessageAndChat(input string) (*domain.Message, *domain.Chat) {
 	var chat *domain.Chat
-	for _, c := range store.GetChats() {
+	for _, c := range store.Storage.Chats {
 		if len(c.Messages) == 0 {
-			chat = c
+			chat = &c
 			break
 		}
 	}
