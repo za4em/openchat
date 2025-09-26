@@ -1,6 +1,7 @@
 package ui
 
 import (
+	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/za4em/openchat/domain"
 )
@@ -10,22 +11,41 @@ const (
 	mainView
 )
 
+const (
+	listFocus = iota
+	chatFocus
+)
+
 type ChatModel struct {
 	ChatStore       domain.ChatStore
 	view            uint
+	focus           uint
 	responseLoading bool
 	chats           []*domain.Chat
+	listIndex       int
 	currentChat     *domain.Chat
+	textInput       textinput.Model
+	error           string
 }
 
 func NewModel(chatStore domain.ChatStore) ChatModel {
 	chats := chatStore.GetChats()
+	var currentChat *domain.Chat
+	if len(chats) == 0 {
+		currentChat = nil
+	} else {
+		currentChat = chats[len(chats)-1]
+	}
 	return ChatModel{
 		ChatStore:       chatStore,
 		view:            mainView,
+		focus:           listFocus,
 		chats:           chats,
-		currentChat:     chats[len(chats)-1],
+		listIndex:       0,
+		currentChat:     currentChat,
 		responseLoading: false,
+		textInput:       textinput.New(),
+		error:           "",
 	}
 }
 
