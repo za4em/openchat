@@ -72,9 +72,9 @@ func (store *ChatStore) createMessageAndChat(input string) (*domain.Message, *do
 	}
 	message := domain.NewMessage(input)
 	if chat == nil {
-		chat = domain.NewChat(message)
+		chat = domain.NewChat(*message)
 	} else {
-		chat.Messages = append(chat.Messages, message)
+		chat.Messages = append(chat.Messages, *message)
 	}
 	return message, chat
 }
@@ -89,7 +89,7 @@ func getLastResponse(chat *domain.Chat) (*domain.Response, error) {
 
 func addNewMessageToChat(input string, chat *domain.Chat) *domain.Message {
 	message := domain.NewMessage(input)
-	chat.Messages = append(chat.Messages, message)
+	chat.Messages = append(chat.Messages, *message)
 	return message
 }
 

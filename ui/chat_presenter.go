@@ -12,13 +12,12 @@ func (model ChatModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		cmd  tea.Cmd
 	)
 
-	model.textInput, cmd = model.textInput.Update(msg)
-	cmds = append(cmds, cmd)
-
 	switch msg := msg.(type) {
+	case tea.WindowSizeMsg:
+		_, y := sidebarStyle.GetFrameSize()
+		model.list.SetSize(20, msg.Height-y)
 	case tea.KeyMsg:
 		key := msg.String()
-
 		//todo add model.view handling
 		switch model.focus {
 		case listFocus:
@@ -32,24 +31,23 @@ func (model ChatModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				model.focus = chatFocus
 				// show input
 
-			case "up", "k":
-				if model.listIndex > 0 {
-					model.listIndex--
-				}
+			// case "up", "k":
+			// 	if model.listIndex > 0 {
+			// 		model.listIndex--
+			// 	}
 
-			case "down", "j":
-				if model.listIndex < len(model.chats)-1 {
-					model.listIndex++
-				}
+			// case "down", "j":
+			// 	if model.listIndex < len(model.chats)-1 {
+			// 		model.listIndex++
+			// 	}
 
 			case "enter":
-				model.currentChat = &model.chats[model.listIndex]
+				listIndex := model.list.Index()
+				model.currentChat = &model.chats[listIndex]
 				model.textInput.SetValue("")
 				model.textInput.Focus()
 				model.focus = chatFocus
-				// show input
 			}
-
 		case chatFocus:
 			switch key {
 			case "ctrl+q", "ctrl+left", "ctrl+h":
@@ -74,6 +72,15 @@ func (model ChatModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				}
 			}
 		}
+	}
+
+	switch model.focus {
+	case chatFocus:
+		model.textInput, cmd = model.textInput.Update(msg)
+		cmds = append(cmds, cmd)
+	case listFocus:
+		model.list, cmd = model.list.Update(msg)
+		cmds = append(cmds, cmd)
 	}
 	return model, tea.Batch(cmds...)
 }

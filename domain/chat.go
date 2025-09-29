@@ -5,7 +5,7 @@ import (
 )
 
 const ChatTitleLength = 30
-const ChatDescrioptionLength = 30
+const ChatDescriptionLength = 30
 
 type Message struct {
 	ID       string    `json:"id"`
@@ -19,9 +19,9 @@ type Response struct {
 }
 
 type Chat struct {
-	ID       string     `json:"id"`
-	Name     string     `json:"name"`
-	Messages []*Message `json:"messages"`
+	ID       string    `json:"id"`
+	Name     string    `json:"name"`
+	Messages []Message `json:"messages"`
 }
 
 func NewMessage(input string) *Message {
@@ -31,7 +31,7 @@ func NewMessage(input string) *Message {
 	}
 }
 
-func NewChat(message *Message) *Chat {
+func NewChat(message Message) *Chat {
 	var name string
 	if len(message.Text) > ChatTitleLength {
 		name = message.Text[:ChatTitleLength]
@@ -41,7 +41,7 @@ func NewChat(message *Message) *Chat {
 	return &Chat{
 		ID:       uuid.NewString(),
 		Name:     name,
-		Messages: []*Message{message},
+		Messages: []Message{message},
 	}
 }
 
@@ -51,24 +51,7 @@ type ChatStore interface {
 	SendMessage(input string, chat *Chat) error
 }
 
-func (chat Chat) FilterValue() string {
-	return chat.Name + " " + chat.Messages[0].Text
-}
 
-func (chat Chat) Title() string { return chat.Name }
-func (chat Chat) Description() string {
-	lastMessage := chat.Messages[len(chat.Messages)-1]
-	lastResponse := lastMessage.Response
-	responseText := "Loading response"
-	if lastResponse != nil {
-		responseText = lastResponse.Text
-	}
-	responseTextTrimmed := responseText
-	if len(responseText) > ChatDescrioptionLength {
-		responseTextTrimmed = responseText[:30]
-	}
-	return responseTextTrimmed
-}
 
 func (message Message) FilterValue() string {
 	return message.Text + " " + message.Response.Text
