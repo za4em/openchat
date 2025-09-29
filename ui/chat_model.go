@@ -7,23 +7,27 @@ import (
 	"github.com/za4em/openchat/domain"
 )
 
-const (
-	enterApiTokenView = iota
-	mainView
-)
+type view int
 
 const (
-	listFocus = iota
-	chatFocus
+	enterApiToken view = iota
+	main
+)
+
+type focus int
+
+const (
+	sidebar focus = iota
+	chat
 )
 
 type ChatModel struct {
 	ChatStore       domain.ChatStore
-	view            uint
-	focus           uint
+	view            view
+	focus           focus
 	responseLoading bool
 	chats           []domain.Chat
-	list            list.Model
+	sidebar         list.Model
 	currentChat     *domain.Chat
 	textInput       textinput.Model
 	error           string
@@ -61,18 +65,21 @@ func NewModel(chatStore domain.ChatStore) ChatModel {
 	listModel := list.New(items, list.NewDefaultDelegate(), 0, 0)
 	listModel.Title = "OPENCHAT"
 	listModel.SetShowPagination(false)
-
-	return ChatModel{
+	listModel.SetItems(items)
+	model := ChatModel{
 		ChatStore:       chatStore,
-		view:            mainView,
-		focus:           listFocus,
+		view:            main,
+		focus:           sidebar,
 		chats:           chats,
-		list:            listModel,
+		sidebar:         listModel,
 		currentChat:     nil,
 		responseLoading: false,
 		textInput:       textinput.New(),
 		error:           "",
 	}
+	model.textInput.Width = chatWidth
+
+	return model
 }
 
 func (model ChatModel) Init() tea.Cmd {

@@ -5,9 +5,14 @@ import (
 )
 
 var (
-	sidebarStyle = lipgloss.NewStyle().Width(30).Border(lipgloss.RoundedBorder())
-	chatStyle    = lipgloss.NewStyle().Width(60).Padding(1)
-	inputStyle   = lipgloss.NewStyle().Width(60).Border(lipgloss.RoundedBorder())
+	sidebarWidth int = 20
+	chatWidth    int = 60
+)
+
+var (
+	sidebarStyle = lipgloss.NewStyle().Border(lipgloss.RoundedBorder())
+	chatStyle    = lipgloss.NewStyle().Padding(1, 1, 1, 1)
+	inputStyle   = lipgloss.NewStyle().Border(lipgloss.RoundedBorder())
 )
 
 func (model ChatModel) View() string {
@@ -23,14 +28,14 @@ func (model ChatModel) View() string {
 	}
 
 	main := lipgloss.JoinVertical(
-		lipgloss.Bottom,
+		lipgloss.Left,
 		chatStyle.Render(chat),
 		inputStyle.Render(model.textInput.View()),
 	)
 
 	body := lipgloss.JoinHorizontal(
-		lipgloss.Left,
-		sidebarStyle.Render(model.list.View()),
+		lipgloss.Bottom,
+		sidebarStyle.Render(model.sidebar.View()),
 		main,
 	)
 
