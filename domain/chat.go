@@ -7,14 +7,19 @@ import (
 const ChatTitleLength = 30
 const ChatDescriptionLength = 30
 
-type Message struct {
-	ID       string    `json:"id"`
-	Text     string    `json:"text"`
-	Response *Response `json:"response"`
-}
+type Role string
 
-type Response struct {
+const (
+	System    Role = "system"
+	Developer Role = "developer"
+	User      Role = "user"
+	Assistant Role = "assistant"
+	Tool      Role = "tool"
+)
+
+type Message struct {
 	ID   string `json:"id"`
+	Role Role   `json:"role"`
 	Text string `json:"text"`
 }
 
@@ -24,24 +29,23 @@ type Chat struct {
 	Messages []Message `json:"messages"`
 }
 
-func NewMessage(input string) *Message {
+func NewMessage(role Role, text string) *Message {
 	return &Message{
 		ID:   uuid.NewString(),
-		Text: input,
+		Role: User,
+		Text: text,
 	}
 }
 
-func NewChat(message Message) *Chat {
-	var name string
-	if len(message.Text) > ChatTitleLength {
-		name = message.Text[:ChatTitleLength]
-	} else {
-		name = message.Text
+func NewChat(input string) *Chat {
+	name := input
+	if len(input) > ChatTitleLength {
+		name = input[:ChatTitleLength]
 	}
 	return &Chat{
 		ID:       uuid.NewString(),
 		Name:     name,
-		Messages: []Message{message},
+		Messages: []Message{},
 	}
 }
 
@@ -51,11 +55,9 @@ type ChatStore interface {
 	SendMessage(input string, chat *Chat) error
 }
 
-
-
 func (message Message) FilterValue() string {
-	return message.Text + " " + message.Response.Text
+	return message.Text
 }
 
 func (message Message) Title() string       { return message.Text }
-func (message Message) Description() string { return message.Response.Text }
+func (message Message) Description() string { return message.Text }

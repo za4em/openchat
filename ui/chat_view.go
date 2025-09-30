@@ -21,9 +21,6 @@ func (model ChatModel) View() string {
 	if model.currentChat != nil {
 		for _, message := range model.currentChat.Messages {
 			chat += message.Text + "\n"
-			if message.Response != nil {
-				chat += message.Response.Text + "\n"
-			}
 		}
 	}
 

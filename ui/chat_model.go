@@ -43,11 +43,10 @@ func (chat ChatItem) FilterValue() string {
 
 func (chat ChatItem) Title() string { return chat.Name }
 func (chat ChatItem) Description() string {
-	lastMessage := chat.Messages[len(chat.Messages)-1]
-	lastResponse := lastMessage.Response
 	responseText := "Loading response"
-	if lastResponse != nil {
-		responseText = lastResponse.Text
+	lastMessage := chat.Messages[len(chat.Messages)-1]
+	if len(chat.Messages) != 0 {
+		responseText = lastMessage.Text
 	}
 	responseTextTrimmed := responseText
 	if len(responseText) > domain.ChatDescriptionLength {

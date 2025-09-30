@@ -9,7 +9,7 @@ import (
 )
 
 type ChatStore struct {
-	Api     *api.XaiApi
+	Api     *api.OpenRouterApi
 	Storage *storage.ChatStorage
 }
 
@@ -22,75 +22,47 @@ func (store *ChatStore) GetChats() []domain.Chat {
 }
 
 func (store *ChatStore) CreateChat(input string) (*domain.Chat, error) {
-	message, chat := store.createMessageAndChat(input)
-	err := store.saveChat(chat)
-	if err != nil {
-		return nil, err
-	}
-
-	request := store.Api.NewChatRequest(input)
-	response, err := store.Api.CreateChat(request)
-	if err != nil {
-		return nil, handleApiError(err)
-	}
-
-	message.Response = convertApiResponse(response)
-	err = store.saveChat(chat)
+	chat := domain.NewChat(input)
+	err := store.SendMessage(input, chat)
 	return chat, err
 }
 
 func (store *ChatStore) SendMessage(input string, chat *domain.Chat) error {
-	lastResponse, err := getLastResponse(chat)
+	userMessage := domain.NewMessage(domain.User, input)
+	chat.Messages = append(chat.Messages, *userMessage)
+	err := store.saveChat(chat)
 	if err != nil {
 		return err
 	}
 
-	message := addNewMessageToChat(input, chat)
-	err = store.saveChat(chat)
-	if err != nil {
-		return err
-	}
-
-	request := store.Api.NewContinueChatRequest(input, lastResponse.ID)
-	response, err := store.Api.ContinueChat(request)
+	messages := convertDomainMessagesToApi(chat.Messages)
+	request := store.Api.NewChatCompletionRequest(messages)
+	response, err := store.Api.SendMessage(request)
 	if err != nil {
 		return handleApiError(err)
 	}
 
-	message.Response = convertApiResponse(response)
+	responseMessages := convertApiMessagesToDomain(response.Choices)
+	chat.Messages = append(chat.Messages, responseMessages...)
 	err = store.saveChat(chat)
 	return err
 }
 
-func (store *ChatStore) createMessageAndChat(input string) (*domain.Message, *domain.Chat) {
-	var chat *domain.Chat
-	for _, c := range store.Storage.Chats {
-		if len(c.Messages) == 0 {
-			chat = &c
-			break
-		}
+func convertDomainMessagesToApi(domainMessages []domain.Message) []api.Message {
+	var apiMessages []api.Message
+	for _, msg := range domainMessages {
+		apiMessages = append(apiMessages, api.Message{Role: string(msg.Role), Content: msg.Text})
 	}
-	message := domain.NewMessage(input)
-	if chat == nil {
-		chat = domain.NewChat(*message)
-	} else {
-		chat.Messages = append(chat.Messages, *message)
-	}
-	return message, chat
+	return apiMessages
 }
 
-func getLastResponse(chat *domain.Chat) (*domain.Response, error) {
-	lastResponse := chat.Messages[len(chat.Messages)-1].Response
-	if lastResponse == nil {
-		return nil, domain.ErrUnableToSendMessage("Wait for the response or delete previous message")
+func convertApiMessagesToDomain(apiMessages []api.Choice) []domain.Message {
+	var domainMessages []domain.Message
+	for _, choice := range apiMessages {
+		msg := choice.Message
+		domainMessages = append(domainMessages, *domain.NewMessage(domain.Role(msg.Role), msg.Content))
 	}
-	return lastResponse, nil
-}
-
-func addNewMessageToChat(input string, chat *domain.Chat) *domain.Message {
-	message := domain.NewMessage(input)
-	chat.Messages = append(chat.Messages, *message)
-	return message
+	return domainMessages
 }
 
 func (store *ChatStore) saveChat(chat *domain.Chat) error {
@@ -104,24 +76,4 @@ func (store *ChatStore) saveChat(chat *domain.Chat) error {
 func handleApiError(err error) error {
 	log.Println(err)
 	return domain.ErrUnexpectedAPIResponse(err)
-}
-
-func convertApiResponse(response *api.ChatResponse) *domain.Response {
-	return &domain.Response{
-		ID:   response.ID,
-		Text: getContentFromResponse(response),
-	}
-}
-
-func getContentFromResponse(response *api.ChatResponse) string {
-	for _, output := range response.Output {
-		if output.Type == "message" {
-			for _, content := range output.Content {
-				if len(content.Text) != 0 {
-					return content.Text
-				}
-			}
-		}
-	}
-	return "Model responded with empty string"
 }

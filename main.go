@@ -13,12 +13,12 @@ import (
 
 func main() {
 	config := config.Config{
-		API_URL:       config.XAI_API_URL,
+		API_URL:       config.OPENROUTER_API_URL,
 		API_KEY:       "",
 		DefaultModel:  config.DEFAULT_MODEL,
 		DefaultStream: false,
 	}
-	api := api.NewXaiApi(config)
+	api := api.NewOpenRouterApi(config)
 	storage, error := storage.NewChatStorage()
 	if error != nil {
 		log.Fatal(error)

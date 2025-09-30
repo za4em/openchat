@@ -1,8 +1,8 @@
 package config
 
-var (
-	XAI_API_URL   = "https://api.x.ai/v1"
-	DEFAULT_MODEL = "grok-4-fast-non-reasoning"
+const (
+	OPENROUTER_API_URL = "https://openrouter.ai/api/v1"
+	DEFAULT_MODEL      = "x-ai/grok-4-fast:free"
 )
 
 type Config struct {
