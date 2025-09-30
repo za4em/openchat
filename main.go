@@ -2,8 +2,10 @@ package main
 
 import (
 	"log"
+	"os"
 
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/joho/godotenv"
 	"github.com/za4em/openchat/config"
 	"github.com/za4em/openchat/data/datasource/api"
 	"github.com/za4em/openchat/data/datasource/storage"
@@ -12,9 +14,11 @@ import (
 )
 
 func main() {
+	godotenv.Load(".env")
+	apiKey := os.Getenv("API_KEY")
 	config := config.Config{
 		API_URL:       config.OPENROUTER_API_URL,
-		API_KEY:       "",
+		API_KEY:       apiKey,
 		DefaultModel:  config.DEFAULT_MODEL,
 		DefaultStream: false,
 	}
