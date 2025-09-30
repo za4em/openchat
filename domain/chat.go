@@ -1,6 +1,8 @@
 package domain
 
 import (
+	"time"
+
 	"github.com/google/uuid"
 )
 
@@ -18,9 +20,10 @@ const (
 )
 
 type Message struct {
-	ID   string `json:"id"`
-	Role Role   `json:"role"`
-	Text string `json:"text"`
+	ID      string    `json:"id"`
+	Role    Role      `json:"role"`
+	Text    string    `json:"text"`
+	Created time.Time `json:"created"`
 }
 
 type Chat struct {
@@ -31,9 +34,10 @@ type Chat struct {
 
 func NewMessage(role Role, text string) *Message {
 	return &Message{
-		ID:   uuid.NewString(),
-		Role: User,
-		Text: text,
+		ID:      uuid.NewString(),
+		Role:    role,
+		Text:    text,
+		Created: time.Now(),
 	}
 }
 

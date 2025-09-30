@@ -30,6 +30,8 @@ type ChatCompletionResponse struct {
 	ID      string   `json:"id"`
 	Choices []Choice `json:"choices"`
 	Usage   Usage    `json:"usage"`
+	// For now we set time.Now()
+	// Created int      `json:"created"`
 }
 
 type Choice struct {
@@ -51,7 +53,7 @@ func (api *OpenRouterApi) NewChatCompletionRequest(messages []Message) *ChatComp
 	}
 }
 
-func (api *OpenRouterApi) sendRequest(request *ChatCompletionRequest) (*ChatCompletionResponse, error) {
+func (api *OpenRouterApi) SendMessage(request *ChatCompletionRequest) (*ChatCompletionResponse, error) {
 	client := resty.New()
 	defer client.Close()
 
@@ -64,10 +66,4 @@ func (api *OpenRouterApi) sendRequest(request *ChatCompletionRequest) (*ChatComp
 		Post(api.API_URL + "/chat/completions")
 
 	return &response, err
-}
-
-func (api *OpenRouterApi) SendMessage(messages []Message, newInput string) (*ChatCompletionResponse, error) {
-	messages = append(messages, Message{Role: "user", Content: newInput})
-	request := api.NewChatCompletionRequest(messages)
-	return api.sendRequest(request)
 }
