@@ -5,14 +5,10 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/adrg/xdg"
 	"github.com/za4em/openchat/domain"
 )
 
 const (
-	APP_PATH        = "openchat"
-	CHAT_PATH       = "chats"
-	DIR_PERMISSION  = 0755
 	FILE_PERMISSION = 0644
 )
 
@@ -21,12 +17,7 @@ type ChatStorage struct {
 	Chats     map[string]domain.Chat
 }
 
-func NewChatStorage() (*ChatStorage, error) {
-	configDir, err := createConfigDir()
-	if err != nil {
-		return nil, err
-	}
-
+func NewChatStorage(configDir string) (*ChatStorage, error) {
 	storage := &ChatStorage{
 		configDir: configDir,
 		Chats:     make(map[string]domain.Chat),
@@ -59,12 +50,6 @@ func (storage *ChatStorage) parseFile(file os.DirEntry) (*domain.Chat, error) {
 	var chat domain.Chat
 	err = json.Unmarshal(data, &chat)
 	return &chat, err
-}
-
-func createConfigDir() (string, error) {
-	configDir := filepath.Join(xdg.ConfigHome, APP_PATH, CHAT_PATH)
-	err := os.MkdirAll(configDir, os.FileMode(DIR_PERMISSION))
-	return configDir, err
 }
 
 func (storage *ChatStorage) Save(chat *domain.Chat) error {
