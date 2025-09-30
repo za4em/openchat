@@ -20,16 +20,17 @@ const (
 )
 
 type Message struct {
-	ID      string    `json:"id"`
-	Role    Role      `json:"role"`
-	Text    string    `json:"text"`
-	Created time.Time `json:"created"`
+	ID      string
+	Role    Role
+	Text    string
+	Created time.Time
 }
 
 type Chat struct {
-	ID       string    `json:"id"`
-	Name     string    `json:"name"`
-	Messages []Message `json:"messages"`
+	ID       string
+	Name     string
+	Messages []Message
+	Updated  time.Time
 }
 
 func NewMessage(role Role, text string) *Message {
@@ -50,13 +51,19 @@ func NewChat(input string) *Chat {
 		ID:       uuid.NewString(),
 		Name:     name,
 		Messages: []Message{},
+		Updated:  time.Now(),
 	}
+}
+
+func (chat *Chat) UpdateDatetime() {
+	chat.Updated = time.Now()
 }
 
 type ChatStore interface {
 	GetChats() []Chat
 	CreateChat(input string) (*Chat, error)
 	SendMessage(input string, chat *Chat) error
+	UpdateChat(chat *Chat) error
 }
 
 func (message Message) FilterValue() string {

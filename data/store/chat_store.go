@@ -30,6 +30,7 @@ func (store *ChatStore) CreateChat(input string) (*domain.Chat, error) {
 func (store *ChatStore) SendMessage(input string, chat *domain.Chat) error {
 	userMessage := domain.NewMessage(domain.User, input)
 	chat.Messages = append(chat.Messages, *userMessage)
+	chat.UpdateDatetime()
 	err := store.saveChat(chat)
 	if err != nil {
 		return err
@@ -44,6 +45,7 @@ func (store *ChatStore) SendMessage(input string, chat *domain.Chat) error {
 
 	responseMessages := convertApiMessagesToDomain(response.Choices)
 	chat.Messages = append(chat.Messages, responseMessages...)
+	chat.UpdateDatetime()
 	err = store.saveChat(chat)
 	return err
 }
