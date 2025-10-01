@@ -4,6 +4,7 @@ import (
 	"log"
 
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/za4em/openchat/domain"
 )
 
 func (model ChatModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -29,18 +30,6 @@ func (model ChatModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				model.textInput.SetValue("")
 				model.textInput.Focus()
 				model.focus = chat
-				// show input
-
-			// case "up", "k":
-			// 	if model.listIndex > 0 {
-			// 		model.listIndex--
-			// 	}
-
-			// case "down", "j":
-			// 	if model.listIndex < len(model.chats)-1 {
-			// 		model.listIndex++
-			// 	}
-
 			case "enter":
 				listIndex := model.sidebar.Index()
 				model.currentChat = &model.chats[listIndex]
@@ -57,10 +46,11 @@ func (model ChatModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				input := model.textInput.Value()
 				if len(input) != 0 {
 					var err error
+					var chats []domain.Chat
 					if model.currentChat != nil {
-						err = model.ChatStore.SendMessage(input, model.currentChat)
+						chats, err = model.ChatStore.SendMessage(input, model.currentChat)
 					} else {
-						_, err = model.ChatStore.CreateChat(input)
+						chats, err = model.ChatStore.CreateChat(input)
 					}
 					if err != nil {
 						log.Fatal(err)
@@ -68,6 +58,8 @@ func (model ChatModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 						//todo handle error
 					} else {
 						model.textInput.SetValue("")
+						model.chats = chats
+						model.sidebar.SetItems(chatsToListItem(chats))
 					}
 				}
 			}

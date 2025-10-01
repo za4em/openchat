@@ -60,10 +60,9 @@ func (chat *Chat) UpdateDatetime() {
 }
 
 type ChatStore interface {
-	GetChats() []Chat
-	CreateChat(input string) (*Chat, error)
-	SendMessage(input string, chat *Chat) error
-	UpdateChat(chat *Chat) error
+	GetChats() ([]Chat, error)
+	CreateChat(input string) ([]Chat, error)
+	SendMessage(input string, chat *Chat) ([]Chat, error)
 }
 
 func (message Message) FilterValue() string {

@@ -56,15 +56,14 @@ func (chat ChatItem) Description() string {
 }
 
 func NewModel(chatStore domain.ChatStore) ChatModel {
-	chats := chatStore.GetChats()
-	items := make([]list.Item, len(chats))
-	for i := range chats {
-		items[i] = ChatItem{Chat: &chats[i]}
+	chats, err := chatStore.GetChats()
+	if err != nil {
+		chats = []domain.Chat{}
 	}
+	items := chatsToListItem(chats)
 	listModel := list.New(items, list.NewDefaultDelegate(), 0, 0)
 	listModel.Title = "OPENCHAT"
 	listModel.SetShowPagination(false)
-	listModel.SetItems(items)
 	model := ChatModel{
 		ChatStore:       chatStore,
 		view:            main,
@@ -74,11 +73,19 @@ func NewModel(chatStore domain.ChatStore) ChatModel {
 		currentChat:     nil,
 		responseLoading: false,
 		textInput:       textinput.New(),
-		error:           "",
+		error:           err.Error(),
 	}
 	model.textInput.Width = chatWidth
 
 	return model
+}
+
+func chatsToListItem(chats []domain.Chat) []list.Item {
+	items := make([]list.Item, len(chats))
+	for i := range chats {
+		items[i] = ChatItem{Chat: &chats[i]}
+	}
+	return items
 }
 
 func (model ChatModel) Init() tea.Cmd {

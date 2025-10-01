@@ -1,9 +1,11 @@
 package main
 
 import (
+	"context"
 	"database/sql"
 	"log"
 	"os"
+	"time"
 
 	_ "github.com/mattn/go-sqlite3"
 
@@ -11,7 +13,7 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/za4em/openchat/config"
 	"github.com/za4em/openchat/data/datasource/api"
-	"github.com/za4em/openchat/data/datasource/storage"
+	"github.com/za4em/openchat/data/datasource/db"
 	"github.com/za4em/openchat/data/store"
 	"github.com/za4em/openchat/ui"
 )
@@ -33,21 +35,19 @@ func main() {
 		ConfigDir:     configDir,
 	}
 
-	db, err := sql.Open("sqlite3", configDir+"./app.db") // Creates file if missing
+	dbConnection, err := sql.Open("sqlite3", configDir+"./app.db") // Creates file if missing
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer db.Close()
+	defer dbConnection.Close()
 
 	api := api.NewOpenRouterApi(config)
-	storage, error := storage.NewChatStorage(configDir)
-	if error != nil {
-		log.Fatal(error)
-		return
-	}
+	database := db.New(dbConnection)
+	ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
 	store := &store.ChatStore{
-		Api:     api,
-		Storage: storage,
+		Api: api,
+		DB:  database,
+		Ctx: ctx,
 	}
 	uiModel := ui.NewModel(store)
 	p := tea.NewProgram(uiModel)
